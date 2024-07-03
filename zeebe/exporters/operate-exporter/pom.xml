@@ -25,6 +25,11 @@
   <dependencies>
 
     <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>io.camunda</groupId>
       <artifactId>operate-schema</artifactId>
     </dependency>
@@ -82,6 +87,11 @@
     <dependency>
       <groupId>io.camunda</groupId>
       <artifactId>operate-common</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.camunda</groupId>
+      <artifactId>operate-importer-common</artifactId>
     </dependency>
 
     <dependency>
