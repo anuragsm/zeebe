@@ -84,7 +84,7 @@ public class UserTaskController {
 
   private CompletableFuture<ResponseEntity<Object>> assignUserTask(
       final AssignUserTaskRequest request) {
-    return RequestMapper.executeServiceMethodWithNoContenResult(
+    return RequestMapper.executeServiceMethodWithNoContentResult(
         () ->
             userTaskServices
                 .withAuthentication(RequestMapper.getAuthentication())
@@ -97,7 +97,7 @@ public class UserTaskController {
 
   private CompletableFuture<ResponseEntity<Object>> completeUserTask(
       final CompleteUserTaskRequest request) {
-    return RequestMapper.executeServiceMethodWithNoContenResult(
+    return RequestMapper.executeServiceMethodWithNoContentResult(
         () ->
             userTaskServices
                 .withAuthentication(RequestMapper.getAuthentication())
@@ -106,7 +106,7 @@ public class UserTaskController {
 
   private CompletableFuture<ResponseEntity<Object>> unassignUserTask(
       final AssignUserTaskRequest request) {
-    return RequestMapper.executeServiceMethodWithNoContenResult(
+    return RequestMapper.executeServiceMethodWithNoContentResult(
         () ->
             userTaskServices
                 .withAuthentication(RequestMapper.getAuthentication())
@@ -115,7 +115,7 @@ public class UserTaskController {
 
   private CompletableFuture<ResponseEntity<Object>> updateUserTask(
       final UpdateUserTaskRequest request) {
-    return RequestMapper.executeServiceMethodWithNoContenResult(
+    return RequestMapper.executeServiceMethodWithNoContentResult(
         () ->
             userTaskServices
                 .withAuthentication(RequestMapper.getAuthentication())
