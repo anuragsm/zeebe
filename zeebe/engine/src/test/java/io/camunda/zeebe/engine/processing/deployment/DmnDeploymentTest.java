@@ -237,6 +237,9 @@ public final class DmnDeploymentTest {
     assertThat(decisionRecords.get(0).getKey())
         .describedAs("Expect that the decision records have different keys")
         .isNotEqualTo(decisionRecords.get(1).getKey());
+
+    assertThat(decisionRecords)
+        .allSatisfy(record -> assertThat(record.getRecordVersion()).isEqualTo(2));
   }
 
   @Test
