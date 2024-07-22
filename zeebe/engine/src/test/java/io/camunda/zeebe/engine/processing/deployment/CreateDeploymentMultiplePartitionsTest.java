@@ -502,6 +502,33 @@ public final class CreateDeploymentMultiplePartitionsTest {
   }
 
   @Test
+  public void shouldWriteDecisionCreatedEventsWithDeploymentKeyOnAllPartitions() {
+    // given
+    final var decisionId = "jedi_or_sith";
+
+    // when
+    final var deployment =
+        ENGINE.deployment().withXmlClasspathResource(DMN_DECISION_TABLE).deploy();
+
+    // then
+    ENGINE.forEachPartition(
+        partitionId -> {
+          final var record =
+              RecordingExporter.decisionRecords()
+                  .withPartitionId(partitionId)
+                  .withIntents(DecisionIntent.CREATED)
+                  .withDecisionId(decisionId)
+                  .limit(1)
+                  .getFirst();
+          assertThat(record)
+              .isNotNull()
+              .extracting(Record::getValue)
+              .extracting(DecisionRecordValue::getDeploymentKey)
+              .isEqualTo(deployment.getKey());
+        });
+  }
+
+  @Test
   public void shouldCreateProcessForTenant() {
     // given
     final String tenant = "tenant";

@@ -34,9 +34,10 @@ public final class DecisionRecord extends UnifiedRecordValue implements Decision
   private final BooleanProperty isDuplicateProp = new BooleanProperty("isDuplicate", false);
   private final StringProperty tenantIdProp =
       new StringProperty("tenantId", TenantOwned.DEFAULT_TENANT_IDENTIFIER);
+  private final LongProperty deploymentKeyProp = new LongProperty("deploymentKey", -1);
 
   public DecisionRecord() {
-    super(8);
+    super(9);
     declareProperty(decisionIdProp)
         .declareProperty(decisionNameProp)
         .declareProperty(versionProp)
@@ -44,7 +45,8 @@ public final class DecisionRecord extends UnifiedRecordValue implements Decision
         .declareProperty(decisionRequirementsIdProp)
         .declareProperty(decisionRequirementsKeyProp)
         .declareProperty(isDuplicateProp)
-        .declareProperty(tenantIdProp);
+        .declareProperty(tenantIdProp)
+        .declareProperty(deploymentKeyProp);
   }
 
   @Override
@@ -80,6 +82,16 @@ public final class DecisionRecord extends UnifiedRecordValue implements Decision
   @Override
   public boolean isDuplicate() {
     return isDuplicateProp.getValue();
+  }
+
+  @Override
+  public long getDeploymentKey() {
+    return deploymentKeyProp.getValue();
+  }
+
+  public DecisionRecord setDeploymentKey(final long deploymentKey) {
+    deploymentKeyProp.setValue(deploymentKey);
+    return this;
   }
 
   public DecisionRecord setDecisionRequirementsKey(final long decisionRequirementsKey) {
