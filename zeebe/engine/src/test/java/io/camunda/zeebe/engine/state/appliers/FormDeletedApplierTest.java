@@ -10,6 +10,7 @@ package io.camunda.zeebe.engine.state.appliers;
 import static io.camunda.zeebe.util.buffer.BufferUtil.wrapString;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.camunda.zeebe.engine.state.deployment.PersistedForm;
 import io.camunda.zeebe.engine.state.mutable.MutableFormState;
 import io.camunda.zeebe.engine.state.mutable.MutableProcessingState;
 import io.camunda.zeebe.engine.util.ProcessingStateExtension;
@@ -26,26 +27,25 @@ public class FormDeletedApplierTest {
   private static final String TENANT_1 = "tenant1";
   private static final String TENANT_2 = "tenant2";
 
-  private final String tenantId = "<default>";
   private MutableProcessingState processingState;
   private MutableFormState formState;
-  private FormCreatedApplier formCreatedApplier;
+  private FormCreatedV1Applier formCreatedApplier;
   private FormDeletedApplier formDeletedApplier;
   private KeyGenerator keyGenerator;
 
   @BeforeEach
   public void setup() {
     formState = processingState.getFormState();
-    formCreatedApplier = new FormCreatedApplier(formState);
+    formCreatedApplier = new FormCreatedV1Applier(formState);
     formDeletedApplier = new FormDeletedApplier(formState);
     keyGenerator = processingState.getKeyGenerator();
   }
 
   @Test
-  void shouldNotFindVersion2AsLatestFormAfterDeletion() {
+  void shouldNotFindVersion2AsLatestFormAfterDeletingVersion2() {
     // given
     final var formV1 = sampleFormRecord();
-    final var formV2 = sampleFormRecord(2L, "form-id", 2, TENANT_1);
+    final var formV2 = sampleFormRecord(2L, "form-id", 2, 2L, TENANT_1);
     formCreatedApplier.applyState(formV1.getFormKey(), formV1);
     formCreatedApplier.applyState(formV2.getFormKey(), formV2);
 
@@ -65,10 +65,10 @@ public class FormDeletedApplierTest {
   }
 
   @Test
-  void shouldFindVersion2AsLatestFormAfterDeletion() {
+  void shouldFindVersion2AsLatestFormAfterDeletingVersion1() {
     // given
     final var formV1 = sampleFormRecord();
-    final var formV2 = sampleFormRecord(2L, "form-id", 2, TENANT_1);
+    final var formV2 = sampleFormRecord(2L, "form-id", 2, 2L, TENANT_1);
     formCreatedApplier.applyState(formV1.getFormKey(), formV1);
     formCreatedApplier.applyState(formV2.getFormKey(), formV2);
 
@@ -88,11 +88,59 @@ public class FormDeletedApplierTest {
   }
 
   @Test
+  void shouldNotFindVersion1ByIdAndDeploymentKeyAfterDeletingVersion1() {
+    // given
+    final var formV1 = sampleFormRecord();
+    final var formV2 = sampleFormRecord(2L, "form-id", 2, 2L, TENANT_1);
+    formCreatedApplier.applyState(formV1.getFormKey(), formV1);
+    formCreatedApplier.applyState(formV2.getFormKey(), formV2);
+
+    // when
+    formDeletedApplier.applyState(formV1.getFormKey(), formV1);
+
+    // then
+    assertThat(
+            formState.findFormByIdAndDeploymentKey(
+                formV1.getFormIdBuffer(), formV1.getDeploymentKey(), formV1.getTenantId()))
+        .isEmpty();
+    assertThat(
+            formState.findFormByIdAndDeploymentKey(
+                formV2.getFormIdBuffer(), formV2.getDeploymentKey(), formV2.getTenantId()))
+        .get()
+        .extracting(PersistedForm::getFormKey, PersistedForm::getVersion)
+        .containsExactly(2L, 2);
+  }
+
+  @Test
+  void shouldNotFindVersion2ByIdAndDeploymentKeyAfterDeletingVersion2() {
+    // given
+    final var formV1 = sampleFormRecord();
+    final var formV2 = sampleFormRecord(2L, "form-id", 2, 2L, TENANT_1);
+    formCreatedApplier.applyState(formV1.getFormKey(), formV1);
+    formCreatedApplier.applyState(formV2.getFormKey(), formV2);
+
+    // when
+    formDeletedApplier.applyState(formV2.getFormKey(), formV2);
+
+    // then
+    assertThat(
+            formState.findFormByIdAndDeploymentKey(
+                formV2.getFormIdBuffer(), formV2.getDeploymentKey(), formV2.getTenantId()))
+        .isEmpty();
+    assertThat(
+            formState.findFormByIdAndDeploymentKey(
+                formV1.getFormIdBuffer(), formV1.getDeploymentKey(), formV1.getTenantId()))
+        .get()
+        .extracting(PersistedForm::getFormKey, PersistedForm::getVersion)
+        .containsExactly(1L, 1);
+  }
+
+  @Test
   void shouldNotReuseADeletedVersionNumber() {
     // given
     final var form = sampleFormRecord();
     formCreatedApplier.applyState(form.getFormKey(), form);
-    final var formV2 = sampleFormRecord(2L, "form-id", 2, TENANT_1);
+    final var formV2 = sampleFormRecord(2L, "form-id", 2, 2L, TENANT_1);
     formCreatedApplier.applyState(formV2.getFormKey(), formV2);
 
     // when
@@ -109,11 +157,12 @@ public class FormDeletedApplierTest {
   @Test
   public void shouldDeleteFormForSpecificTenant() {
     // given
-    final long formKey = keyGenerator.nextKey();
-    final String formId = Strings.newRandomValidBpmnId();
-    final int version = 1;
-    final var tenant1Form = sampleFormRecord(formKey, formId, version, TENANT_1);
-    final var tenant2Form = sampleFormRecord(formKey, formId, version, TENANT_2);
+    final var formKey = keyGenerator.nextKey();
+    final var deploymentKey = keyGenerator.nextKey();
+    final var formId = Strings.newRandomValidBpmnId();
+    final var version = 1;
+    final var tenant1Form = sampleFormRecord(formKey, formId, version, deploymentKey, TENANT_1);
+    final var tenant2Form = sampleFormRecord(formKey, formId, version, deploymentKey, TENANT_2);
 
     formCreatedApplier.applyState(tenant1Form.getFormKey(), tenant1Form);
     formCreatedApplier.applyState(tenant2Form.getFormKey(), tenant2Form);
@@ -124,14 +173,26 @@ public class FormDeletedApplierTest {
     // then
     assertThat(formState.findLatestFormById(tenant1Form.getFormIdBuffer(), TENANT_1)).isEmpty();
     assertThat(formState.findLatestFormById(tenant2Form.getFormIdBuffer(), TENANT_2)).isNotEmpty();
+    assertThat(
+            formState.findFormByIdAndDeploymentKey(
+                tenant1Form.getFormIdBuffer(), tenant1Form.getDeploymentKey(), TENANT_1))
+        .isEmpty();
+    assertThat(
+            formState.findFormByIdAndDeploymentKey(
+                tenant2Form.getFormIdBuffer(), tenant2Form.getDeploymentKey(), TENANT_2))
+        .isNotEmpty();
   }
 
   private FormRecord sampleFormRecord() {
-    return sampleFormRecord(1L, "form-id", 1, TENANT_1);
+    return sampleFormRecord(1L, "form-id", 1, 1L, TENANT_1);
   }
 
   private FormRecord sampleFormRecord(
-      final long key, final String id, final int version, final String tenant) {
+      final long key,
+      final String id,
+      final int version,
+      final long deploymentKey,
+      final String tenant) {
     return new FormRecord()
         .setFormKey(key)
         .setFormId(id)
@@ -139,6 +200,7 @@ public class FormDeletedApplierTest {
         .setResourceName("resourceName")
         .setResource(wrapString("resource"))
         .setChecksum(wrapString("checksum"))
-        .setTenantId(tenant);
+        .setTenantId(tenant)
+        .setDeploymentKey(deploymentKey);
   }
 }
