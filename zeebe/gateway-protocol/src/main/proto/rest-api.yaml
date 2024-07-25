@@ -1230,6 +1230,8 @@ components:
           $ref: "#/components/schemas/DateFilter"
         tenantIds:
           type: string
+        bpmProcessId:
+          type: string
     UserTaskItem:
       type: object
       properties:

@@ -43,6 +43,7 @@ public class UserTaskFilterTransformer implements FilterTransformer<UserTaskFilt
     final var processDefinitionKeyQuery =
         getProcessDefinitionKeyQuery(filter.processDefinitionKeys());
     final var bpmnProcessIdQuery = getBpmnProcessIdQuery(filter.processNames());
+    final var taskDefinitionIdQuery = getTaskDefinitionIdQuery(filter.userTaskDefinitionIds());
 
     final var candidateUsersQuery = getCandidateUsersQuery(filter.candidateUsers());
     final var candidateGroupsQuery = getCandidateGroupsQuery(filter.candidateGroups());
@@ -68,13 +69,16 @@ public class UserTaskFilterTransformer implements FilterTransformer<UserTaskFilt
         processInstanceKeysQuery,
         processDefinitionKeyQuery,
         tenantQuery,
-        userTaksImplementationQuery);
+        userTaksImplementationQuery,
+        taskDefinitionIdQuery);
   }
 
   @Override
   public List<String> toIndices(final UserTaskFilter filter) {
-    if (Objects.equals(filter.states().getFirst(), "CREATED") && filter.states().size() == 1) {
-      return Arrays.asList("tasklist-task-8.5.0_"); // Not necessary visit alias on this case
+    if (filter != null && filter.states() != null && !filter.states().isEmpty()) {
+      if (Objects.equals(filter.states().getFirst(), "CREATED") && filter.states().size() == 1) {
+        return Arrays.asList("tasklist-task-8.5.0_"); // Not necessary to visit alias in this case
+      }
     }
     return Arrays.asList("tasklist-task-8.5.0_alias");
   }
@@ -125,6 +129,10 @@ public class UserTaskFilterTransformer implements FilterTransformer<UserTaskFilt
 
   private SearchQuery getBpmnProcessIdQuery(final List<String> bpmnProcessId) {
     return stringTerms("bpmnProcessId", bpmnProcessId);
+  }
+
+  private SearchQuery getTaskDefinitionIdQuery(final List<String> taskDefinitionId) {
+    return stringTerms("flowNodeBpmnId", taskDefinitionId);
   }
 
   private FilterTransformer<VariableValueFilter> getVariableValueFilterTransformer() {

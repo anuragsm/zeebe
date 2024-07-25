@@ -254,7 +254,7 @@ public final class SearchQueryRequestMapper {
 
       // state
       if (filter.getTaskState() != null && !filter.getTaskState().isEmpty()) {
-        builder.userTaskState(filter.getTaskState());
+        builder.states(filter.getTaskState());
       }
 
       // assignee
