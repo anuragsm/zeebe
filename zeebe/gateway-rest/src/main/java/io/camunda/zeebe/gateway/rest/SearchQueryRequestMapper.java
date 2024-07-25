@@ -257,6 +257,16 @@ public final class SearchQueryRequestMapper {
         builder.states(filter.getTaskState());
       }
 
+      // bpmnProcessId
+      if (filter.getBpmProcessId() != null && !filter.getBpmProcessId().isEmpty()) {
+        builder.processNames(filter.getBpmProcessId());
+      }
+
+      // elementId
+      if (filter.getElementId() != null && !filter.getElementId().isEmpty()) {
+        builder.elementIds(filter.getElementId());
+      }
+
       // assignee
       if (filter.getAssignee() != null && !filter.getAssignee().isEmpty()) {
         builder.assignees(filter.getAssignee());

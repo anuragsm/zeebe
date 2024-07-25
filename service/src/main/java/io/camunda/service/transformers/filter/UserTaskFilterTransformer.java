@@ -42,8 +42,8 @@ public class UserTaskFilterTransformer implements FilterTransformer<UserTaskFilt
     final var processInstanceKeysQuery = getProcessInstanceKeysQuery(filter.processInstanceKeys());
     final var processDefinitionKeyQuery =
         getProcessDefinitionKeyQuery(filter.processDefinitionKeys());
-    final var bpmnProcessIdQuery = getBpmnProcessIdQuery(filter.processNames());
-    final var taskDefinitionIdQuery = getTaskDefinitionIdQuery(filter.userTaskDefinitionIds());
+    final var bpmnProcessIdQuery = getBpmnProcessIdQuery(filter.bpmProcessId());
+    final var elementIdQuery = getElementIdQuery(filter.elementIds());
 
     final var candidateUsersQuery = getCandidateUsersQuery(filter.candidateUsers());
     final var candidateGroupsQuery = getCandidateGroupsQuery(filter.candidateGroups());
@@ -70,7 +70,7 @@ public class UserTaskFilterTransformer implements FilterTransformer<UserTaskFilt
         processDefinitionKeyQuery,
         tenantQuery,
         userTaksImplementationQuery,
-        taskDefinitionIdQuery);
+        elementIdQuery);
   }
 
   @Override
@@ -131,7 +131,7 @@ public class UserTaskFilterTransformer implements FilterTransformer<UserTaskFilt
     return stringTerms("bpmnProcessId", bpmnProcessId);
   }
 
-  private SearchQuery getTaskDefinitionIdQuery(final List<String> taskDefinitionId) {
+  private SearchQuery getElementIdQuery(final List<String> taskDefinitionId) {
     return stringTerms("flowNodeBpmnId", taskDefinitionId);
   }
 
