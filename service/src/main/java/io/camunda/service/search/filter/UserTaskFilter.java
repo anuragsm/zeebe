@@ -194,15 +194,6 @@ public final record UserTaskFilter(
       return this;
     }
 
-    public Builder elementIds(final String... values) {
-      return elementIds(collectValuesAsList(values));
-    }
-
-    public Builder elementIds(final List<String> values) {
-      elementIds = addValuesToList(elementIds, values);
-      return this;
-    }
-
     @Override
     public UserTaskFilter build() {
       return new UserTaskFilter(
