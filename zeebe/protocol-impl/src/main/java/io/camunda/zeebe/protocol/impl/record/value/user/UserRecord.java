@@ -16,20 +16,24 @@ import io.camunda.zeebe.protocol.record.value.UserRecordValue;
 import org.agrona.DirectBuffer;
 
 public final class UserRecord extends UnifiedRecordValue implements UserRecordValue {
-
   private final StringProperty usernameProp = new StringProperty("username");
   private final StringProperty nameProp = new StringProperty("name");
   private final StringProperty emailProp = new StringProperty("email");
+  private final StringProperty passwordProp = new StringProperty("password");
 
   public UserRecord() {
-    super(3);
-    declareProperty(usernameProp).declareProperty(nameProp).declareProperty(emailProp);
+    super(4);
+    declareProperty(usernameProp)
+        .declareProperty(nameProp)
+        .declareProperty(emailProp)
+        .declareProperty(passwordProp);
   }
 
   public void wrap(final UserRecord record) {
     usernameProp.setValue(record.getUsernameBuffer());
     nameProp.setValue(record.getNameBuffer());
     emailProp.setValue(record.getEmailBuffer());
+    passwordProp.setValue(record.getEmailBuffer());
   }
 
   @Override
@@ -77,6 +81,21 @@ public final class UserRecord extends UnifiedRecordValue implements UserRecordVa
     return this;
   }
 
+  @Override
+  public String getPassword() {
+    return bufferAsString(passwordProp.getValue());
+  }
+
+  public UserRecord setPassword(final String password) {
+    passwordProp.setValue(password);
+    return this;
+  }
+
+  public UserRecord setPassword(final DirectBuffer password) {
+    passwordProp.setValue(password);
+    return this;
+  }
+
   @JsonIgnore
   public DirectBuffer getUsernameBuffer() {
     return usernameProp.getValue();
@@ -90,5 +109,10 @@ public final class UserRecord extends UnifiedRecordValue implements UserRecordVa
   @JsonIgnore
   public DirectBuffer getEmailBuffer() {
     return emailProp.getValue();
+  }
+
+  @JsonIgnore
+  public DirectBuffer getPasswordBuffer() {
+    return passwordProp.getValue();
   }
 }

@@ -40,6 +40,10 @@ public final class CamundaServices extends ApiServices<CamundaServices> {
     return new UserTaskServices(brokerClient, searchClient, transformers, authentication);
   }
 
+  public <T> UserServices<T> userServices() {
+    return new UserServices<>(brokerClient, searchClient, transformers, authentication);
+  }
+
   public VariableServices variableServices() {
     return new VariableServices(brokerClient, searchClient, transformers, authentication);
   }
