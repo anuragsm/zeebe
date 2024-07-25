@@ -258,13 +258,14 @@ public final class SearchQueryRequestMapper {
       }
 
       // bpmnProcessId
-      if (filter.getBpmProcessId() != null && !filter.getBpmProcessId().isEmpty()) {
-        builder.processNames(filter.getBpmProcessId());
+      if (filter.getBpmnProcessDefinitionId() != null
+          && !filter.getBpmnProcessDefinitionId().isEmpty()) {
+        builder.bpmProcessDefinitionIds(filter.getBpmnProcessDefinitionId());
       }
 
       // elementId
       if (filter.getElementId() != null && !filter.getElementId().isEmpty()) {
-        builder.elementIds(filter.getElementId());
+        builder.userTaskElementIds(filter.getElementId());
       }
 
       // assignee

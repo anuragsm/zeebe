@@ -42,7 +42,8 @@ public class UserTaskFilterTransformer implements FilterTransformer<UserTaskFilt
     final var processInstanceKeysQuery = getProcessInstanceKeysQuery(filter.processInstanceKeys());
     final var processDefinitionKeyQuery =
         getProcessDefinitionKeyQuery(filter.processDefinitionKeys());
-    final var bpmnProcessIdQuery = getBpmnProcessIdQuery(filter.bpmProcessId());
+    final var bpmnProcessDefinitionIdQuery =
+        getBpmnProcessIdQuery(filter.bpmProcessDefinitionIds());
     final var elementIdQuery = getElementIdQuery(filter.elementIds());
 
     final var candidateUsersQuery = getCandidateUsersQuery(filter.candidateUsers());
@@ -57,7 +58,7 @@ public class UserTaskFilterTransformer implements FilterTransformer<UserTaskFilt
 
     return and(
         userTaskKeysQuery,
-        bpmnProcessIdQuery,
+        bpmnProcessDefinitionIdQuery,
         candidateUsersQuery,
         candidateGroupsQuery,
         assigneesQuery,
