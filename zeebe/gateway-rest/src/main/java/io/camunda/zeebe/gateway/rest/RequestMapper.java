@@ -211,7 +211,7 @@ public class RequestMapper {
                     .orElseGet(result));
   }
 
-  public static CompletableFuture<ResponseEntity<Object>> executeServiceMethodWithNoContenResult(
+  public static CompletableFuture<ResponseEntity<Object>> executeServiceMethodWithNoContentResult(
       final Supplier<CompletableFuture<?>> method) {
     return RequestMapper.executeServiceMethod(method, () -> ResponseEntity.noContent().build());
   }
