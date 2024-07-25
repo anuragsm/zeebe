@@ -98,7 +98,10 @@ public final class BpmnUserTaskBehavior {
             p ->
                 evaluateExternalFormReferenceExpression(
                         userTaskProps.getExternalFormReference(), scopeKey)
-                    .map(p::externalFormReference));
+                    .map(p::externalFormReference))
+        .flatMap(
+            p ->
+                evaluatePriorityExpression(userTaskProps.getPriority(), scopeKey).map(p::priority));
   }
 
   public UserTaskRecord createNewUserTask(
@@ -127,6 +130,7 @@ public final class BpmnUserTaskBehavior {
         .setElementId(element.getId())
         .setElementInstanceKey(context.getElementInstanceKey())
         .setTenantId(context.getTenantId())
+        .setPriority(userTaskProperties.getPriority())
         .setCreationTimestamp(ActorClock.currentTimeMillis());
 
     stateWriter.appendFollowUpEvent(userTaskKey, UserTaskIntent.CREATING, userTaskRecord);
@@ -204,6 +208,14 @@ public final class BpmnUserTaskBehavior {
     return expressionBehavior.evaluateStringExpression(externalFormReference, scopeKey);
   }
 
+  public Either<Failure, Long> evaluatePriorityExpression(
+      final Expression priorityExpression, final long scopeKey) {
+    if (priorityExpression == null) {
+      return Either.right(50L);
+    }
+    return expressionBehavior.evaluateLongExpression(priorityExpression, scopeKey);
+  }
+
   public void cancelUserTask(final BpmnElementContext context) {
     final var elementInstance = stateBehavior.getElementInstance(context);
     cancelUserTask(elementInstance);
@@ -235,6 +247,7 @@ public final class BpmnUserTaskBehavior {
     private String externalFormReference;
     private String followUpDate;
     private Long formKey;
+    private Long priority;
 
     public String getAssignee() {
       return getOrEmpty(assignee);
@@ -296,6 +309,15 @@ public final class BpmnUserTaskBehavior {
 
     public UserTaskProperties formKey(final Long formKey) {
       this.formKey = formKey;
+      return this;
+    }
+
+    public Long getPriority() {
+      return priority == null ? 50 : priority;
+    }
+
+    public UserTaskProperties priority(final Long priority) {
+      this.priority = priority;
       return this;
     }
 

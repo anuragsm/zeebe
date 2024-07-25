@@ -20,6 +20,7 @@ public class UserTaskProperties {
   private Expression externalFormReference;
   private Expression followUpDate;
   private Expression formId;
+  private Expression priority;
   private Map<String, String> taskHeaders = Map.of();
 
   public Expression getAssignee() {
@@ -86,6 +87,14 @@ public class UserTaskProperties {
     this.taskHeaders = taskHeaders;
   }
 
+  public Expression getPriority() {
+    return priority;
+  }
+
+  public void setPriority(final Expression priority) {
+    this.priority = priority;
+  }
+
   public void wrap(final UserTaskProperties userTaskProperties) {
     setAssignee(userTaskProperties.getAssignee());
     setCandidateGroups(userTaskProperties.getCandidateGroups());
@@ -95,5 +104,6 @@ public class UserTaskProperties {
     setFollowUpDate(userTaskProperties.getFollowUpDate());
     setFormId(userTaskProperties.getFormId());
     setTaskHeaders(userTaskProperties.getTaskHeaders());
+    setPriority(userTaskProperties.getPriority());
   }
 }
