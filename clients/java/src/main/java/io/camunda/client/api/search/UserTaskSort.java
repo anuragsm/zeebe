@@ -34,7 +34,7 @@ import io.camunda.client.api.search.TypedSearchQueryRequest.SearchRequestSort;
 
 public interface UserTaskSort extends SearchRequestSort<UserTaskSort> {
 
-  UserTaskSort startDate();
+  UserTaskSort creationDate();
 
-  UserTaskSort endDate();
+  UserTaskSort completionDate();
 }
