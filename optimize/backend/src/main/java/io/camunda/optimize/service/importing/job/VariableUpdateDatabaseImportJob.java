@@ -9,7 +9,6 @@ package io.camunda.optimize.service.importing.job;
 
 import io.camunda.optimize.dto.optimize.ImportRequestDto;
 import io.camunda.optimize.dto.optimize.query.variable.ProcessVariableDto;
-import io.camunda.optimize.service.CamundaEventImportService;
 import io.camunda.optimize.service.db.DatabaseClient;
 import io.camunda.optimize.service.db.writer.variable.ProcessVariableUpdateWriter;
 import io.camunda.optimize.service.importing.DatabaseImportJob;
@@ -20,26 +19,22 @@ import java.util.List;
 public class VariableUpdateDatabaseImportJob extends DatabaseImportJob<ProcessVariableDto> {
 
   private final ProcessVariableUpdateWriter processVariableUpdateWriter;
-  private final CamundaEventImportService camundaEventImportService;
   private final ConfigurationService configurationService;
 
   public VariableUpdateDatabaseImportJob(
       final ProcessVariableUpdateWriter variableWriter,
-      final CamundaEventImportService camundaEventImportService,
       final ConfigurationService configurationService,
       final Runnable callback,
       final DatabaseClient databaseClient) {
     super(callback, databaseClient);
-    this.processVariableUpdateWriter = variableWriter;
-    this.camundaEventImportService = camundaEventImportService;
+    processVariableUpdateWriter = variableWriter;
     this.configurationService = configurationService;
   }
 
   @Override
-  protected void persistEntities(List<ProcessVariableDto> variableUpdates) {
-    List<ImportRequestDto> importBulks = new ArrayList<>();
+  protected void persistEntities(final List<ProcessVariableDto> variableUpdates) {
+    final List<ImportRequestDto> importBulks = new ArrayList<>();
     importBulks.addAll(processVariableUpdateWriter.generateVariableUpdateImports(variableUpdates));
-    importBulks.addAll(camundaEventImportService.generateVariableUpdateImports(variableUpdates));
     databaseClient.executeImportRequestsAsBulk(
         "Variable updates",
         importBulks,

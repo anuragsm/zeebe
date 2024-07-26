@@ -31,7 +31,6 @@ import io.camunda.optimize.dto.optimize.ProcessInstanceDto;
 import io.camunda.optimize.dto.optimize.TenantDto;
 import io.camunda.optimize.dto.optimize.importing.DecisionInstanceDto;
 import io.camunda.optimize.dto.optimize.query.MetadataDto;
-import io.camunda.optimize.dto.optimize.query.event.process.CamundaActivityEventDto;
 import io.camunda.optimize.dto.optimize.query.event.process.EventDto;
 import io.camunda.optimize.dto.optimize.query.event.process.EventProcessDefinitionDto;
 import io.camunda.optimize.dto.optimize.query.event.process.EventProcessInstanceDto;
@@ -44,7 +43,6 @@ import io.camunda.optimize.service.db.schema.OptimizeIndexNameService;
 import io.camunda.optimize.service.db.schema.ScriptData;
 import io.camunda.optimize.service.db.schema.index.IndexMappingCreatorBuilder;
 import io.camunda.optimize.service.db.schema.index.VariableUpdateInstanceIndex;
-import io.camunda.optimize.service.db.schema.index.events.CamundaActivityEventIndex;
 import io.camunda.optimize.service.db.schema.index.events.EventIndex;
 import io.camunda.optimize.service.db.schema.index.events.EventProcessInstanceIndex;
 import io.camunda.optimize.service.util.configuration.ConfigurationService;
@@ -255,14 +253,6 @@ public class DatabaseIntegrationTestExtension implements BeforeEachCallback, Aft
 
   public List<ProcessInstanceDto> getAllProcessInstances() {
     return getAllDocumentsOfIndexAs(PROCESS_INSTANCE_MULTI_ALIAS, ProcessInstanceDto.class);
-  }
-
-  @SneakyThrows
-  public List<CamundaActivityEventDto> getAllStoredCamundaActivityEventsForDefinition(
-      final String processDefinitionKey) {
-    return getAllDocumentsOfIndexAs(
-        CamundaActivityEventIndex.constructIndexName(processDefinitionKey),
-        CamundaActivityEventDto.class);
   }
 
   public EventProcessDefinitionDto addEventProcessDefinitionDtoToDatabase(final String key) {
