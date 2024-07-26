@@ -21,6 +21,7 @@ import io.camunda.zeebe.engine.processing.common.ExpressionProcessor;
 import io.camunda.zeebe.engine.processing.common.Failure;
 import io.camunda.zeebe.engine.processing.deployment.model.element.ExecutableCallActivity;
 import io.camunda.zeebe.engine.state.deployment.DeployedProcess;
+import io.camunda.zeebe.model.bpmn.instance.zeebe.ZeebeBindingType;
 import io.camunda.zeebe.protocol.record.intent.ProcessInstanceIntent;
 import io.camunda.zeebe.protocol.record.value.ErrorType;
 import io.camunda.zeebe.util.Either;
@@ -70,7 +71,9 @@ public final class CallActivityProcessor
   public Either<Failure, ?> finalizeActivation(
       final ExecutableCallActivity element, final BpmnElementContext context) {
     return evaluateProcessId(context, element)
-        .flatMap(processId -> getProcessForProcessId(processId, context.getTenantId()))
+        .flatMap(
+            processId ->
+                getProcessForProcessIdAndBindingType(processId, element.getBindingType(), context))
         .flatMap(this::checkProcessHasNoneStartEvent)
         .flatMap(p -> eventSubscriptionBehavior.subscribeToEvents(element, context).map(ok -> p))
         .thenDo(
@@ -196,18 +199,51 @@ public final class CallActivityProcessor
         processIdExpression, scopeKey);
   }
 
-  private Either<Failure, DeployedProcess> getProcessForProcessId(
+  private Either<Failure, DeployedProcess> getProcessForProcessIdAndBindingType(
+      final DirectBuffer processId,
+      final ZeebeBindingType bindingType,
+      final BpmnElementContext context) {
+    return switch (bindingType) {
+      case deployment -> getProcessVersionInSameDeployment(processId, context);
+      case latest -> getLatestProcessVersion(processId, context.getTenantId());
+    };
+  }
+
+  private Either<Failure, DeployedProcess> getProcessVersionInSameDeployment(
+      final DirectBuffer processId, final BpmnElementContext context) {
+    final var process =
+        stateBehavior
+            .getProcess(context.getProcessDefinitionKey(), context.getTenantId())
+            .map(DeployedProcess::getDeploymentKey)
+            .flatMap(
+                deploymentKey ->
+                    stateBehavior.getProcessByProcessIdAndDeploymentKey(
+                        processId, deploymentKey, context.getTenantId()));
+    return process
+        .<Either<Failure, DeployedProcess>>map(Either::right)
+        .orElseGet(
+            () ->
+                Either.left(
+                    new Failure(
+                        String.format(
+                            "Expected process with BPMN process id '%s' to be deployed in same deployment, but not found.",
+                            BufferUtil.bufferAsString(processId)),
+                        ErrorType.CALLED_ELEMENT_ERROR)));
+  }
+
+  private Either<Failure, DeployedProcess> getLatestProcessVersion(
       final DirectBuffer processId, final String tenantId) {
     final var process = stateBehavior.getLatestProcessVersion(processId, tenantId);
-    if (process.isPresent()) {
-      return Either.right(process.get());
-    }
-    return Either.left(
-        new Failure(
-            String.format(
-                "Expected process with BPMN process id '%s' to be deployed, but not found.",
-                BufferUtil.bufferAsString(processId)),
-            ErrorType.CALLED_ELEMENT_ERROR));
+    return process
+        .<Either<Failure, DeployedProcess>>map(Either::right)
+        .orElseGet(
+            () ->
+                Either.left(
+                    new Failure(
+                        String.format(
+                            "Expected process with BPMN process id '%s' to be deployed, but not found.",
+                            BufferUtil.bufferAsString(processId)),
+                        ErrorType.CALLED_ELEMENT_ERROR)));
   }
 
   private Either<Failure, DeployedProcess> checkProcessHasNoneStartEvent(
