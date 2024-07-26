@@ -219,6 +219,7 @@ public final class CallActivityProcessor
                 deploymentKey ->
                     stateBehavior.getProcessByProcessIdAndDeploymentKey(
                         processId, deploymentKey, context.getTenantId()));
+    // TODO already return failure if deployment key not found (case should not happen)
     return process
         .<Either<Failure, DeployedProcess>>map(Either::right)
         .orElseGet(
@@ -227,6 +228,7 @@ public final class CallActivityProcessor
                     new Failure(
                         String.format(
                             "Expected process with BPMN process id '%s' to be deployed in same deployment, but not found.",
+                            // TODO include deployment key in error message
                             BufferUtil.bufferAsString(processId)),
                         ErrorType.CALLED_ELEMENT_ERROR)));
   }
