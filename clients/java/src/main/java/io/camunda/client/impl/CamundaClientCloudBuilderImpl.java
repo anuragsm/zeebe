@@ -36,6 +36,8 @@ import io.camunda.client.api.JsonMapper;
 import io.camunda.client.impl.oauth.OAuthCredentialsProviderBuilder;
 import io.camunda.zeebe.client.ClientProperties;
 import io.grpc.ClientInterceptor;
+import org.apache.hc.client5.http.async.AsyncExecChainHandler;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -236,6 +238,12 @@ public class CamundaClientCloudBuilderImpl
   }
 
   @Override
+  public CamundaClientBuilder withChainHandlers(AsyncExecChainHandler... chainHandler) {
+    innerBuilder.withChainHandlers(chainHandler);
+    return this;
+  }
+
+    @Override
   public CamundaClientBuilder withJsonMapper(final JsonMapper jsonMapper) {
     innerBuilder.withJsonMapper(jsonMapper);
     return this;

@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
+import org.apache.hc.client5.http.async.AsyncExecChainHandler;
 
 public interface CamundaClientBuilder {
 
@@ -161,6 +162,8 @@ public interface CamundaClientBuilder {
   CamundaClientBuilder keepAlive(Duration keepAlive);
 
   CamundaClientBuilder withInterceptors(ClientInterceptor... interceptor);
+
+  CamundaClientBuilder withChainHandlers(AsyncExecChainHandler... chainHandler);
 
   CamundaClientBuilder withJsonMapper(JsonMapper jsonMapper);
 

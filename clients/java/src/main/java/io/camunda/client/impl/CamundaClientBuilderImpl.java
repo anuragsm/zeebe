@@ -54,6 +54,8 @@ import io.camunda.client.impl.util.Environment;
 import io.camunda.zeebe.client.ClientProperties;
 import io.camunda.zeebe.client.impl.ZeebeClientBuilderImpl;
 import io.grpc.ClientInterceptor;
+import org.apache.hc.client5.http.async.AsyncExecChainHandler;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -94,6 +96,7 @@ public final class CamundaClientBuilderImpl
   private boolean applyEnvironmentVariableOverrides = true;
 
   private final List<ClientInterceptor> interceptors = new ArrayList<>();
+  private final List<AsyncExecChainHandler> chainHandlers = new ArrayList<>();
   private String gatewayAddress = DEFAULT_GATEWAY_ADDRESS;
   private URI restAddress = DEFAULT_REST_ADDRESS;
   private URI grpcAddress = DEFAULT_GRPC_ADDRESS;
@@ -208,6 +211,11 @@ public final class CamundaClientBuilderImpl
   }
 
   @Override
+  public List<AsyncExecChainHandler> getChainHandlers() {
+    return chainHandlers;
+  }
+
+    @Override
   public JsonMapper getJsonMapper() {
     return jsonMapper;
   }
@@ -518,7 +526,13 @@ public final class CamundaClientBuilderImpl
     return this;
   }
 
-  @Override
+    @Override
+    public CamundaClientBuilder withChainHandlers(AsyncExecChainHandler... chainHandler) {
+      this.chainHandlers.addAll(Arrays.asList(chainHandler));
+      return this;
+    }
+
+    @Override
   public CamundaClientBuilder withJsonMapper(final JsonMapper jsonMapper) {
     this.jsonMapper = jsonMapper;
     return this;

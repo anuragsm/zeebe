@@ -18,6 +18,8 @@ package io.camunda.client;
 import io.camunda.client.api.ExperimentalApi;
 import io.camunda.client.api.JsonMapper;
 import io.grpc.ClientInterceptor;
+import org.apache.hc.client5.http.async.AsyncExecChainHandler;
+
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
@@ -109,6 +111,8 @@ public interface CamundaClientConfiguration {
   Duration getKeepAlive();
 
   List<ClientInterceptor> getInterceptors();
+
+  List<AsyncExecChainHandler> getChainHandlers();
 
   /**
    * @see CamundaClientBuilder#withJsonMapper(JsonMapper)
