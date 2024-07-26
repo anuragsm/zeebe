@@ -95,7 +95,8 @@ public final class CallActivityIncidentTest {
                 "call",
                 c -> c.zeebeProcessId(childProcessId).zeebeBindingType(ZeebeBindingType.deployment))
             .done();
-    ENGINE.deployment().withXmlResource("wf-parent.bpmn", parentProcess).deploy();
+    final var deployment =
+        ENGINE.deployment().withXmlResource("wf-parent.bpmn", parentProcess).deploy();
 
     // when
     final long processInstanceKey =
@@ -111,7 +112,9 @@ public final class CallActivityIncidentTest {
         .hasErrorMessage(
             "Expected process with BPMN process id '"
                 + childProcessId
-                + "' to be deployed in same deployment, but not found.");
+                + "' to be deployed with deployment "
+                + deployment.getKey()
+                + ", but not found.");
   }
 
   @Test

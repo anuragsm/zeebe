@@ -211,25 +211,29 @@ public final class CallActivityProcessor
 
   private Either<Failure, DeployedProcess> getProcessVersionInSameDeployment(
       final DirectBuffer processId, final BpmnElementContext context) {
-    final var process =
+    final var deploymentKey =
         stateBehavior
             .getProcess(context.getProcessDefinitionKey(), context.getTenantId())
             .map(DeployedProcess::getDeploymentKey)
-            .flatMap(
-                deploymentKey ->
-                    stateBehavior.getProcessByProcessIdAndDeploymentKey(
-                        processId, deploymentKey, context.getTenantId()));
-    // TODO already return failure if deployment key not found (case should not happen)
-    return process
+            .orElse(null);
+    if (deploymentKey == null) {
+      // case should not actually happen
+      return Either.left(
+          new Failure(
+              String.format(
+                  "Expected to find deployment key for process definition key %s, but not found.",
+                  context.getProcessDefinitionKey())));
+    }
+    return stateBehavior
+        .getProcessByProcessIdAndDeploymentKey(processId, deploymentKey, context.getTenantId())
         .<Either<Failure, DeployedProcess>>map(Either::right)
         .orElseGet(
             () ->
                 Either.left(
                     new Failure(
                         String.format(
-                            "Expected process with BPMN process id '%s' to be deployed in same deployment, but not found.",
-                            // TODO include deployment key in error message
-                            BufferUtil.bufferAsString(processId)),
+                            "Expected process with BPMN process id '%s' to be deployed with deployment %s, but not found.",
+                            BufferUtil.bufferAsString(processId), deploymentKey),
                         ErrorType.CALLED_ELEMENT_ERROR)));
   }
 
