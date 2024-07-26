@@ -22,7 +22,6 @@ import io.camunda.optimize.service.util.configuration.ConfigurationService;
 import io.camunda.optimize.service.util.configuration.EnvironmentPropertiesConstants;
 import io.camunda.optimize.service.util.configuration.security.ResponseHeadersConfiguration;
 import io.camunda.optimize.util.jetty.LoggingConfigurationReader;
-import io.camunda.optimize.websocket.StatusWebSocketServlet;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -32,7 +31,6 @@ import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.ee10.servlet.DefaultServlet;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
-import org.eclipse.jetty.ee10.websocket.server.JettyWebSocketServlet;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
@@ -54,7 +52,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.embedded.jetty.JettyServerCustomizer;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -166,12 +163,6 @@ public class JettyConfig {
     final RewriteHandler rewrite = new RewriteHandler();
     rewrite.addRule(badUrlRegex);
     servletContextHandler.insertHandler(rewrite);
-  }
-
-  @Bean
-  public ServletRegistrationBean<JettyWebSocketServlet> socketServlet() {
-    return new ServletRegistrationBean<>(
-        new StatusWebSocketServlet(), OptimizeResourceConstants.STATUS_WEBSOCKET_PATH);
   }
 
   private ServerConnector initHttp2Connector(final Server server) {
