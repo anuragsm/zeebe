@@ -7,6 +7,7 @@
  */
 package io.camunda.zeebe.engine.state.appliers;
 
+import io.camunda.zeebe.engine.processing.identity.AuthorizationCreatedApplier;
 import io.camunda.zeebe.engine.state.EventApplier;
 import io.camunda.zeebe.engine.state.EventApplier.NoSuchEventApplier.NoApplierForIntent;
 import io.camunda.zeebe.engine.state.EventApplier.NoSuchEventApplier.NoApplierForVersion;
@@ -15,6 +16,7 @@ import io.camunda.zeebe.engine.state.mutable.MutableProcessMessageSubscriptionSt
 import io.camunda.zeebe.engine.state.mutable.MutableProcessingState;
 import io.camunda.zeebe.protocol.impl.record.RecordMetadata;
 import io.camunda.zeebe.protocol.record.RecordValue;
+import io.camunda.zeebe.protocol.record.intent.AuthorizationIntent;
 import io.camunda.zeebe.protocol.record.intent.CommandDistributionIntent;
 import io.camunda.zeebe.protocol.record.intent.CompensationSubscriptionIntent;
 import io.camunda.zeebe.protocol.record.intent.DecisionEvaluationIntent;
@@ -104,6 +106,7 @@ public final class EventAppliers implements EventApplier {
     registerCommandDistributionAppliers(state);
     registerEscalationAppliers();
     registerResourceDeletionAppliers();
+    registerAuthorizationAppliers(state);
     return this;
   }
 
@@ -394,6 +397,10 @@ public final class EventAppliers implements EventApplier {
     register(
         CommandDistributionIntent.FINISHED,
         new CommandDistributionFinishedApplier(distributionState));
+  }
+
+  private void registerAuthorizationAppliers(final MutableProcessingState state) {
+    register(AuthorizationIntent.CREATED, new AuthorizationCreatedApplier(state));
   }
 
   private void registerEscalationAppliers() {
