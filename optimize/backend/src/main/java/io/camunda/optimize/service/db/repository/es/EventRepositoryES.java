@@ -60,7 +60,6 @@ import io.camunda.optimize.service.db.es.OptimizeElasticsearchClient;
 import io.camunda.optimize.service.db.es.reader.ElasticsearchReaderUtil;
 import io.camunda.optimize.service.db.es.schema.index.events.EventIndexES;
 import io.camunda.optimize.service.db.es.writer.ElasticsearchWriterUtil;
-import io.camunda.optimize.service.db.reader.ProcessDefinitionReader;
 import io.camunda.optimize.service.db.repository.EventRepository;
 import io.camunda.optimize.service.db.schema.DefaultIndexMappingCreator;
 import io.camunda.optimize.service.db.schema.ScriptData;
@@ -127,7 +126,6 @@ public class EventRepositoryES implements EventRepository {
   private final ObjectMapper objectMapper;
   private final ConfigurationService configurationService;
   private final DateTimeFormatter dateTimeFormatter;
-  private final ProcessDefinitionReader processDefinitionReader;
 
   @Override
   public void upsertEvents(final List<EventDto> eventDtos) {

@@ -18,8 +18,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.camunda.optimize.ApplicationContextProvider;
 import io.camunda.optimize.OptimizeRequestExecutor;
-import io.camunda.optimize.dto.optimize.DecisionDefinitionOptimizeDto;
-import io.camunda.optimize.dto.optimize.ProcessDefinitionOptimizeDto;
 import io.camunda.optimize.dto.optimize.query.security.CredentialsRequestDto;
 import io.camunda.optimize.exception.OptimizeIntegrationTestException;
 import io.camunda.optimize.rest.engine.EngineContext;
@@ -38,7 +36,6 @@ import io.camunda.optimize.service.db.DatabaseClient;
 import io.camunda.optimize.service.db.schema.DatabaseMetadataService;
 import io.camunda.optimize.service.db.schema.DatabaseSchemaManager;
 import io.camunda.optimize.service.db.schema.OptimizeIndexNameService;
-import io.camunda.optimize.service.db.writer.AbstractProcessInstanceDataWriter;
 import io.camunda.optimize.service.db.writer.InstantDashboardMetadataWriter;
 import io.camunda.optimize.service.digest.DigestService;
 import io.camunda.optimize.service.events.ExternalEventService;
@@ -51,8 +48,6 @@ import io.camunda.optimize.service.importing.AbstractImportScheduler;
 import io.camunda.optimize.service.importing.ImportIndexHandlerRegistry;
 import io.camunda.optimize.service.importing.ImportSchedulerManagerService;
 import io.camunda.optimize.service.importing.PositionBasedImportIndexHandler;
-import io.camunda.optimize.service.importing.engine.service.definition.DecisionDefinitionResolverService;
-import io.camunda.optimize.service.importing.engine.service.definition.ProcessDefinitionResolverService;
 import io.camunda.optimize.service.importing.event.EventTraceStateProcessingScheduler;
 import io.camunda.optimize.service.importing.eventprocess.EventBasedProcessesInstanceImportScheduler;
 import io.camunda.optimize.service.importing.eventprocess.EventProcessInstanceImportMediatorManager;
@@ -77,7 +72,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -174,7 +168,7 @@ public class EmbeddedOptimizeExtension
                       applicationContext))
               .initAuthCookie();
       if (isResetImportOnStart()) {
-        resetImportStartIndexes();
+        resetPositionBasedImportStartIndexes();
         setResetImportOnStart(true);
       }
     } catch (final Exception e) {
@@ -242,7 +236,7 @@ public class EmbeddedOptimizeExtension
   @SneakyThrows
   public void importIngestedDataFromScratch() {
     try {
-      resetImportStartIndexes();
+      resetPositionBasedImportStartIndexes();
     } catch (final Exception e) {
       // nothing to do
     }
@@ -261,7 +255,7 @@ public class EmbeddedOptimizeExtension
   @SneakyThrows
   public void importAllZeebeEntitiesFromScratch() {
     try {
-      resetImportStartIndexes();
+      resetPositionBasedImportStartIndexes();
     } catch (final Exception e) {
       // nothing to do
     }
@@ -275,36 +269,6 @@ public class EmbeddedOptimizeExtension
         .orElseThrow(() -> new OptimizeIntegrationTestException("No Zeebe Scheduler present"))
         .runImportRound(true)
         .get();
-  }
-
-  @SneakyThrows
-  public Optional<DecisionDefinitionOptimizeDto> getDecisionDefinitionFromResolverService(
-      final String definitionId) {
-    final DecisionDefinitionResolverService resolverService =
-        getBean(DecisionDefinitionResolverService.class);
-    for (final EngineContext configuredEngine : getConfiguredEngines()) {
-      final Optional<DecisionDefinitionOptimizeDto> definition =
-          resolverService.getDefinition(definitionId, configuredEngine);
-      if (definition.isPresent()) {
-        return definition;
-      }
-    }
-    return Optional.empty();
-  }
-
-  @SneakyThrows
-  public Optional<ProcessDefinitionOptimizeDto> getProcessDefinitionFromResolverService(
-      final String definitionId) {
-    final ProcessDefinitionResolverService resolverService =
-        getBean(ProcessDefinitionResolverService.class);
-    for (final EngineContext configuredEngine : getConfiguredEngines()) {
-      final Optional<ProcessDefinitionOptimizeDto> definition =
-          resolverService.getDefinition(definitionId, configuredEngine);
-      if (definition.isPresent()) {
-        return definition;
-      }
-    }
-    return Optional.empty();
   }
 
   public void storeImportIndexesToElasticsearch() {
@@ -429,7 +393,7 @@ public class EmbeddedOptimizeExtension
         IntegrationTestConfigurationUtil.getSecuredEmbeddedOptimizeEndpoint(applicationContext));
   }
 
-  public void resetImportStartIndexes() {
+  public void resetPositionBasedImportStartIndexes() {
     getAllPositionBasedImportHandlers().forEach(PositionBasedImportIndexHandler::resetImportIndex);
   }
 
@@ -441,14 +405,6 @@ public class EmbeddedOptimizeExtension
       positionBasedHandlers.addAll(getIndexHandlerRegistry().getPositionBasedHandlers(partitionId));
     }
     return positionBasedHandlers;
-  }
-
-  public void resetInstanceDataWriters() {
-    final Map<String, AbstractProcessInstanceDataWriter> writers =
-        getApplicationContext().getBeansOfType(AbstractProcessInstanceDataWriter.class);
-    for (final AbstractProcessInstanceDataWriter<?> writer : writers.values()) {
-      writer.reloadConfiguration(getApplicationContext());
-    }
   }
 
   public void reinitializeSchema() {

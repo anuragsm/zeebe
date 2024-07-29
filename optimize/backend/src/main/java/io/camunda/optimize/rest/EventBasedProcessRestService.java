@@ -83,7 +83,7 @@ public class EventBasedProcessRestService {
         sessionService.getRequestUserOrFailNotAuthorized(requestContext));
     final String userId = sessionService.getRequestUserOrFailNotAuthorized(requestContext);
     return eventProcessService.getAllEventProcessMappingsOmitXml(userId).stream()
-        .map(mappingRestDto -> mapMappingDtoToRestDto(mappingRestDto))
+        .map(this::mapMappingDtoToRestDto)
         .toList();
   }
 

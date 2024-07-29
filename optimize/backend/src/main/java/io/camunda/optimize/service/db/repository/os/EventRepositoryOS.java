@@ -51,7 +51,6 @@ import io.camunda.optimize.service.db.os.externalcode.client.dsl.RequestDSL;
 import io.camunda.optimize.service.db.os.externalcode.client.sync.OpenSearchDocumentOperations;
 import io.camunda.optimize.service.db.os.reader.OpensearchReaderUtil;
 import io.camunda.optimize.service.db.os.schema.index.events.EventIndexOS;
-import io.camunda.optimize.service.db.reader.ProcessDefinitionReader;
 import io.camunda.optimize.service.db.repository.EventRepository;
 import io.camunda.optimize.service.db.schema.DefaultIndexMappingCreator;
 import io.camunda.optimize.service.db.schema.OptimizeIndexNameService;
@@ -123,7 +122,6 @@ public class EventRepositoryOS implements EventRepository {
   private final ConfigurationService configurationService;
   private final DateTimeFormatter dateTimeFormatter;
   private final OptimizeIndexNameService indexNameService;
-  private final ProcessDefinitionReader processDefinitionReader;
 
   @Override
   public void upsertEvents(final List<EventDto> eventDtos) {

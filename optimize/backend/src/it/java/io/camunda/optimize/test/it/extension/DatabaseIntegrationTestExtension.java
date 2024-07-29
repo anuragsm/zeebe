@@ -17,7 +17,6 @@ import static io.camunda.optimize.service.db.DatabaseConstants.EXTERNAL_EVENTS_I
 import static io.camunda.optimize.service.db.DatabaseConstants.PROCESS_DEFINITION_INDEX_NAME;
 import static io.camunda.optimize.service.db.DatabaseConstants.PROCESS_INSTANCE_INDEX_PREFIX;
 import static io.camunda.optimize.service.db.DatabaseConstants.PROCESS_INSTANCE_MULTI_ALIAS;
-import static io.camunda.optimize.service.db.DatabaseConstants.TENANT_INDEX_NAME;
 import static io.camunda.optimize.service.db.DatabaseConstants.VARIABLE_UPDATE_INSTANCE_INDEX_NAME;
 import static io.camunda.optimize.service.db.schema.index.ProcessInstanceIndex.FLOW_NODE_INSTANCES;
 
@@ -28,7 +27,6 @@ import io.camunda.optimize.dto.optimize.IdentityDto;
 import io.camunda.optimize.dto.optimize.IdentityType;
 import io.camunda.optimize.dto.optimize.ProcessDefinitionOptimizeDto;
 import io.camunda.optimize.dto.optimize.ProcessInstanceDto;
-import io.camunda.optimize.dto.optimize.TenantDto;
 import io.camunda.optimize.dto.optimize.importing.DecisionInstanceDto;
 import io.camunda.optimize.dto.optimize.query.MetadataDto;
 import io.camunda.optimize.dto.optimize.query.event.process.EventDto;
@@ -51,7 +49,6 @@ import io.camunda.optimize.test.it.extension.db.DatabaseTestService;
 import io.camunda.optimize.test.it.extension.db.ElasticsearchDatabaseTestService;
 import io.camunda.optimize.test.it.extension.db.OpenSearchDatabaseTestService;
 import io.camunda.optimize.test.it.extension.db.TermsQueryContainer;
-import io.camunda.optimize.test.repository.TestIndexRepository;
 import io.camunda.zeebe.protocol.record.value.BpmnElementType;
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -67,7 +64,6 @@ import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
-import org.elasticsearch.core.TimeValue;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -153,26 +149,6 @@ public class DatabaseIntegrationTestExtension implements BeforeEachCallback, Aft
     return databaseTestService.getDocumentCountOf(indexName);
   }
 
-  public Integer getCountOfCompletedInstances() {
-    return databaseTestService.getCountOfCompletedInstances();
-  }
-
-  public Integer getCountOfCompletedInstancesWithIdsIn(final Set<Object> processInstanceIds) {
-    return databaseTestService.getCountOfCompletedInstancesWithIdsIn(processInstanceIds);
-  }
-
-  public Integer getActivityCountForAllProcessInstances() {
-    return databaseTestService.getActivityCountForAllProcessInstances();
-  }
-
-  public Integer getVariableInstanceCountForAllProcessInstances() {
-    return databaseTestService.getVariableInstanceCountForAllProcessInstances();
-  }
-
-  public Integer getVariableInstanceCountForAllCompletedProcessInstances() {
-    return databaseTestService.getVariableInstanceCountForAllCompletedProcessInstances();
-  }
-
   public void deleteAllOptimizeData() {
     databaseTestService.deleteAllOptimizeData();
   }
@@ -211,16 +187,8 @@ public class DatabaseIntegrationTestExtension implements BeforeEachCallback, Aft
     return databaseTestService.indexExists(indexOrAliasName);
   }
 
-  public TestIndexRepository getTestIndexRepository() {
-    return databaseTestService.getTestIndexRepository();
-  }
-
   public void cleanAndVerify() {
     databaseTestService.cleanAndVerifyDatabase();
-  }
-
-  public void disableCleanup() {
-    databaseTestService.disableCleanup();
   }
 
   public List<DecisionDefinitionOptimizeDto> getAllDecisionDefinitions() {
@@ -237,10 +205,6 @@ public class DatabaseIntegrationTestExtension implements BeforeEachCallback, Aft
                 EVENT_PROCESS_DEFINITION_INDEX_NAME, ProcessDefinitionOptimizeDto.class)
                 .stream())
         .toList();
-  }
-
-  public List<TenantDto> getAllTenants() {
-    return getAllDocumentsOfIndexAs(TENANT_INDEX_NAME, TenantDto.class);
   }
 
   public List<EventDto> getAllStoredExternalEvents() {
@@ -432,10 +396,6 @@ public class DatabaseIntegrationTestExtension implements BeforeEachCallback, Aft
     databaseTestService.deleteProcessInstancesFromIndex(indexName, id);
   }
 
-  public void deleteDatabaseEntryById(final String indexName, final String id) {
-    databaseTestService.deleteDatabaseEntryById(indexName, id);
-  }
-
   public String getDatabaseVersion() {
     return databaseTestService.getDatabaseVersion();
   }
@@ -507,11 +467,6 @@ public class DatabaseIntegrationTestExtension implements BeforeEachCallback, Aft
     return databaseTestService.getImportedActivityCount();
   }
 
-  public void removeStoredOrderCountersForDefinitionKey(final String definitionKey) {
-    final ScriptData scriptData = new ScriptData(Map.of(), "ctx._source.orderCounter = null");
-    databaseTestService.removeStoredOrderCountersForDefinitionKey(definitionKey, scriptData);
-  }
-
   public List<String> getAllIndicesWithWriteAlias(final String externalProcessVariableIndexName) {
     final String aliasNameWithPrefix =
         getIndexNameService().getOptimizeIndexAliasForIndex(externalProcessVariableIndexName);
@@ -523,22 +478,6 @@ public class DatabaseIntegrationTestExtension implements BeforeEachCallback, Aft
     final String aliasNameWithPrefix =
         getIndexNameService().getOptimizeIndexAliasForIndex(externalProcessVariableIndexName);
     return databaseTestService.getAllIndicesWithReadOnlyAlias(aliasNameWithPrefix);
-  }
-
-  public void deleteTraceStateImportIndexForDefinitionKey(final String definitionKey) {
-    databaseTestService.deleteTraceStateImportIndexForDefinitionKey(definitionKey);
-  }
-
-  public void verifyThatAllDocumentsOfIndexAreRelatedToRunningInstancesOnly(
-      final String entityIndex,
-      final String processInstanceField,
-      final TimeValue scrollKeepAlive) {
-    databaseTestService.verifyThatAllDocumentsOfIndexAreRelatedToRunningInstancesOnly(
-        entityIndex, processInstanceField, scrollKeepAlive);
-  }
-
-  public Integer getVariableInstanceCount(final String variableName) {
-    return databaseTestService.getVariableInstanceCount(variableName);
   }
 
   public EventProcessInstanceIndex getEventInstanceIndex(final String indexId) {

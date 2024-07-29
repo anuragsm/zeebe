@@ -12,7 +12,6 @@ import static io.camunda.optimize.service.util.configuration.EnvironmentProperti
 import io.camunda.optimize.dto.optimize.SchedulerConfig;
 import io.camunda.optimize.dto.optimize.ZeebeConfigDto;
 import io.camunda.optimize.dto.optimize.datasource.ZeebeDataSourceDto;
-import io.camunda.optimize.rest.engine.EngineContextFactory;
 import io.camunda.optimize.service.importing.ingested.IngestedDataImportScheduler;
 import io.camunda.optimize.service.importing.ingested.handler.IngestedImportIndexHandlerProvider;
 import io.camunda.optimize.service.importing.ingested.mediator.factory.AbstractIngestedImportMediatorFactory;
@@ -47,7 +46,6 @@ public class ImportSchedulerManagerService implements ConfigurationReloadable {
 
   private final ImportIndexHandlerRegistry importIndexHandlerRegistry;
   private final BeanFactory beanFactory;
-  private final EngineContextFactory engineContextFactory;
   private final ConfigurationService configurationService;
   private final List<AbstractIngestedImportMediatorFactory> ingestedMediatorFactories;
   private final List<AbstractZeebeImportMediatorFactory> zeebeMediatorFactories;
@@ -61,13 +59,11 @@ public class ImportSchedulerManagerService implements ConfigurationReloadable {
   public ImportSchedulerManagerService(
       final ImportIndexHandlerRegistry importIndexHandlerRegistry,
       final BeanFactory beanFactory,
-      final EngineContextFactory engineContextFactory,
       final ConfigurationService configurationService,
       final List<AbstractIngestedImportMediatorFactory> ingestedMediatorFactories,
       final List<AbstractZeebeImportMediatorFactory> zeebeMediatorFactories) {
     this.importIndexHandlerRegistry = importIndexHandlerRegistry;
     this.beanFactory = beanFactory;
-    this.engineContextFactory = engineContextFactory;
     this.configurationService = configurationService;
     this.ingestedMediatorFactories = ingestedMediatorFactories;
     this.zeebeMediatorFactories = zeebeMediatorFactories;
