@@ -128,6 +128,8 @@ public class ElasticsearchExporterConfiguration {
         return index.compensationSubscription;
       case MESSAGE_CORRELATION:
         return index.messageCorrelation;
+      case AUTHORIZATION:
+        return index.authorization;
       default:
         return false;
     }
@@ -204,6 +206,7 @@ public class ElasticsearchExporterConfiguration {
     public boolean userTask = true;
     public boolean compensationSubscription = true;
     public boolean messageCorrelation = true;
+    public boolean authorization = true;
 
     // index settings
     private Integer numberOfShards = null;
@@ -307,6 +310,8 @@ public class ElasticsearchExporterConfiguration {
           + compensationSubscription
           + ", messageCorrelation="
           + messageCorrelation
+          + ", authorization="
+          + authorization
           + '}';
     }
   }
