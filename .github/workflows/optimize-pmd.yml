@@ -1,7 +1,9 @@
 name: Optimize PMD
 on:
   pull_request:
-    branches: ["master", "maintenance/**", "release/**"]
+    branches: ["main", "maintenance/**", "release/**"]
+    paths:
+      - "optimize/**"
   workflow_dispatch:
 
 permissions:
